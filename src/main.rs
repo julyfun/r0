@@ -1,10 +1,12 @@
 #![feature(box_patterns)]
 
 mod helper;
+mod parser;
 mod syntax;
 mod test;
 
 pub use crate::helper::readint;
+pub use crate::parser::parse;
 pub use crate::syntax::Expr::{self, *};
 
 fn interp_exp(expr: Expr) -> i64 {

@@ -5,5 +5,3 @@ pub enum Expr {
     Prim1(String, Box<Expr>),
     Prim2(String, Box<Expr>, Box<Expr>),
 }
-
-pub use Expr::*;
