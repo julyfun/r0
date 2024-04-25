@@ -19,6 +19,17 @@ fn interp_exp(expr: Expr) -> i64 {
     }
 }
 
-fn main() {
-    println!("Hello, world!");
+fn main() -> std::io::Result<()> {
+    use std::io::{self, Write};
+    let mut v = String::new();
+    loop {
+        print!("User> ");
+        io::stdout().flush()?;
+        io::stdin().read_line(&mut v)?;
+        let exp = parse(v.as_str());
+        v.clear();
+        let res = interp_exp(exp);
+        println!("{}", res);
+        io::stdout().flush()?;
+    }
 }

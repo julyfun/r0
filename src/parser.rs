@@ -1,5 +1,7 @@
 use crate::syntax::Expr::{self, *};
 
+/// 生成的 Token
+/// String -> Token Tree -> AST
 #[derive(Debug, Eq, PartialEq)]
 pub enum Sexpr {
     Atom(String),
