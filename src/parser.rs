@@ -1,27 +1,34 @@
-use crate::syntax::Expr::{self, *};
+use crate::{
+    helper::{is_digit, is_valid_var_name},
+    syntax::Expr::{self, *},
+};
 
-/// 生成的 Token
+/// 生成的 Token Tree
+/// Token 就是拆分好的 String
 /// String -> Token Tree -> AST
 #[derive(Debug, Eq, PartialEq)]
 pub enum Sexpr {
     Atom(String),
+    /// 第一个元素是父节点，后面元素依次为子节点
     List(Vec<Sexpr>),
 }
 pub use Sexpr::{Atom, List};
 
+/// str -> token tree
 pub fn scan(expr: &str) -> Sexpr {
     let mut stack = vec![];
-    let mut list = vec![];
-    let mut sym = String::new();
+    let mut list = vec![]; // 当前子树
+    let mut sym = String::new(); // 当前 token symbol (string)
     for c in expr.chars() {
         // (+ (+ 29 (- 8)) 10)
         match c {
             '(' => {
                 stack.push(list); // moved
-                list = vec![];
+                list = vec![]; // 开启全新的 list
             }
             '0'..='9' => sym.push(c),
             'a'..='z' | 'A'..='Z' => sym.push(c),
+            '_' => sym.push(c),
             '+' | '-' | '*' | '/' => sym.push(c),
             ' ' => {
                 if !sym.is_empty() {
@@ -36,10 +43,10 @@ pub fn scan(expr: &str) -> Sexpr {
                     sym = String::new();
                 }
                 let mut pre_list = stack.pop().unwrap();
-                pre_list.push(List(list));
+                pre_list.push(List(list)); // 该子树成为其父亲的一个子结点
                 list = pre_list;
             }
-            _ => (), // 这里应该 painc 么
+            _ => (), // 这里应该 panic 么
         }
     }
     if !sym.is_empty() {
@@ -49,25 +56,51 @@ pub fn scan(expr: &str) -> Sexpr {
     }
 }
 
+/// token (symbol string) tree -> abstract syntax tree
+/// ast 可存储数值，变量名字符串，二进制化的关键字
 pub fn parse_sexpr(sexpr: &Sexpr) -> Expr {
     match sexpr {
-        Atom(s) => {
-            let val: i64 = s.parse().expect("Not an integer");
+        Atom(s) if is_digit(s) => {
+            let val: i64 = s
+                .parse()
+                .unwrap_or_else(|_| panic!("invalid number: {}", s));
             Int(val)
         }
-        List(v) => match v.as_slice() {
+        // 目前唯一生成 Var 类型（是已有变量名，而不是新建变量）
+        Atom(s) if is_valid_var_name(s) => Var(s.to_string()),
+        List(vec) => match vec.as_slice() {
             [Atom(op)] if op.as_str() == "read" => Prim0(op.clone()),
             [Atom(op), e] if op.as_str() == "-" => Prim1(op.clone(), Box::new(parse_sexpr(e))),
+            // vec 类型为 Vec<Sexpr>
             [Atom(op), e1, e2] if op.as_str() == "+" => Prim2(
                 op.clone(),
                 Box::new(parse_sexpr(e1)),
                 Box::new(parse_sexpr(e2)),
             ),
-            _ => panic!("Invalid form!"),
+            // let expression
+            // token   bind      exp
+            // let    (x (...))  (...)
+            // 并不是所有的 List 都是一个 i64
+            [Atom(token), List(bind), exp] if token.as_str() == "let" => {
+                match bind.as_slice() {
+                    [Atom(name), var_exp] if is_valid_var_name(name.as_str()) => Let(
+                        name.clone(),
+                        // 这里结果是啥：一个二进制化的树
+                        Box::new(parse_sexpr(var_exp)),
+                        Box::new(parse_sexpr(exp)),
+                    ),
+                    _ => {
+                        panic!("invalid bind form: {bind:?}")
+                    }
+                }
+            }
+            _ => panic!("invalid form: {vec:?}"),
         },
+        _ => panic!("invalid sexpr: {sexpr:?}"),
     }
 }
 
+/// str -> AST
 pub fn parse(expr: &str) -> Expr {
     let sexpr = scan(expr);
     let expr = parse_sexpr(&sexpr);
