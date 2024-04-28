@@ -39,6 +39,11 @@ fn test1() {
     assert!(!is_valid_var_name("123"));
 }
 
+pub fn gensym() -> String {
+    use uuid::Uuid;
+    Uuid::new_v4().to_string()
+}
+
 #[macro_export]
 macro_rules! string {
     ($x: expr) => {

@@ -62,7 +62,7 @@ where
     /// 将 table 作为 map 的父环境集合
     /// this is a static method
     /// table 传引用进来，不占用所有权，内部使用拷贝
-    pub fn extend(map: HashMap<T, H>, table: &Rc<SymTable<T, H>>) -> Self {
+    pub fn extended(map: HashMap<T, H>, table: &Rc<SymTable<T, H>>) -> Self {
         SymTable {
             map,
             env: Some(Rc::clone(table)),
