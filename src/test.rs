@@ -57,10 +57,10 @@ fn test_nest_let() {
     use crate::interp::interp_r1;
     use crate::syntax::Expr::*;
     let exp = Let(
-        "x".to_string(),
+        Box::new(Var("x".to_string())),
         Box::new(Int(8)),
         Box::new(Let(
-            "y".to_string(),
+            Box::new(Var("y".to_string())),
             Box::new(Int(34)),
             Box::new(Prim2(
                 "+".to_string(),

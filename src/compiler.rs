@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use crate::hashmap;
 use crate::helper::gensym;
-use crate::parser::{self};
 use crate::syntax::{
     Expr::{self, *},
     SymTable,
@@ -20,14 +19,14 @@ fn uniqify_expr(expr: Expr, uniq_name_env: Rc<SymTable<String, String>>) -> Expr
         Var(x) => Var(uniq_name_env.lookup(&x).to_string()),
         Int(n) => Int(n),
         //
-        Let(name, box name_ast, box res_ast) => {
+        Let(box Var(name), box name_ast, box res_ast) => {
             let new_name = gensym();
             // new_name.clone() 防止夺取所有权
             let new_map = hashmap!(name => new_name.clone());
             let sub_uniq_name_env: SymTable<String, String> =
                 SymTable::extended(new_map, &uniq_name_env);
             Let(
-                new_name,
+                Box::new(Var(new_name)),
                 Box::new(uniqify_expr(name_ast, uniq_name_env)),
                 Box::new(uniqify_expr(res_ast, Rc::new(sub_uniq_name_env))),
             )
@@ -39,7 +38,7 @@ fn uniqify_expr(expr: Expr, uniq_name_env: Rc<SymTable<String, String>>) -> Expr
             Box::new(uniqify_expr(e1, uniq_name_env.clone())),
             Box::new(uniqify_expr(e2, uniq_name_env)),
         ),
-        // _ => unreachable!(),
+        _ => panic!("invalid expr {expr:?}"),
     }
 }
 
@@ -54,8 +53,8 @@ fn test_uniquify() {
     let exp = parse(e);
     let exp = uniquify(exp);
     if let Let(
-        x1,
-        box Let(x2, _i1, box Prim2(_add, box Var(x2_), box _i2)),
+        box Var(x1),
+        box Let(box Var(x2), _i1, box Prim2(_add, box Var(x2_), box _i2)),
         box Prim2(_add1, box Var(x1_), box _i3),
     ) = &exp
     {

@@ -20,7 +20,7 @@ pub fn interp_exp(expr: Expr, env: Rc<SymTable<String, i64>>) -> i64 {
             interp_exp(e1, Rc::clone(&env)) + interp_exp(e2, env)
         }
         Var(name) => *env.lookup(&name), // 自动解 Rc
-        Let(name, box e1, box e2) => {
+        Let(box Var(name), box e1, box e2) => {
             // let x (+ 2 3) (+ x 5)
             // 在父环境下解释 e1
             let name_val = interp_exp(e1, Rc::clone(&env));

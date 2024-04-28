@@ -13,7 +13,7 @@ pub enum Expr {
     /// 那第一个为啥不是 String 捏
     /// (let (x (+ 1 2)) (+ x 200)) -> 203
     ///      <1>  <2>       <3>
-    Let(String, Box<Expr>, Box<Expr>),
+    Let(Box<Expr>, Box<Expr>, Box<Expr>),
     Prim0(String),
     Prim1(String, Box<Expr>),
     Prim2(String, Box<Expr>, Box<Expr>),
