@@ -45,13 +45,6 @@ pub fn gensym() -> String {
 }
 
 #[macro_export]
-macro_rules! string {
-    ($x: expr) => {
-        String::from($x)
-    };
-}
-
-#[macro_export]
 macro_rules! hashmap {
     ($($key: expr => $val: expr), *) => {
         {

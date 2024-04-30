@@ -102,7 +102,7 @@ fn parse_sexpr(sexpr: &Sexpr) -> Expr {
             [Atom(token), List(bind), exp] if token.as_str() == "let" => {
                 match bind.as_slice() {
                     [Atom(name), var_exp] if is_valid_var_name(name.as_str()) => Let(
-                        Box::new(Var(name.clone())),
+                        name.clone(),
                         // 这里结果是啥：一个二进制化的树
                         Box::new(parse_sexpr(var_exp)),
                         Box::new(parse_sexpr(exp)),

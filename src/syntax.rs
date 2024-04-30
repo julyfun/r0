@@ -8,12 +8,10 @@ pub enum Expr {
     Int(i64),
     /// 已有变量名，待查询
     Var(String),
-    /// 这为啥三个 Box
-    /// 这儿第一个不是 Box<Var> 捏，Var 的外在类型是 Expr
-    /// 那第一个为啥不是 String 捏
     /// (let (x (+ 1 2)) (+ x 200)) -> 203
     ///      <1>  <2>       <3>
-    Let(Box<Expr>, Box<Expr>, Box<Expr>),
+    /// 在类型中限制 <1> 的类型
+    Let(String, Box<Expr>, Box<Expr>),
     Prim0(String),
     Prim1(String, Box<Expr>),
     Prim2(String, Box<Expr>, Box<Expr>),

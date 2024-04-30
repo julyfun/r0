@@ -42,10 +42,10 @@ fn test_interp() {
 
 #[test]
 fn test_env2() {
+    use crate::hashmap;
     use crate::syntax::SymTable;
-    use crate::{hashmap, string};
     let env = Rc::new(SymTable::new());
-    let map = hashmap!(string!("jenny") => 100, string!("x") => 42);
+    let map = hashmap!("jenny".to_string() => 100, "x".to_string() => 42);
     // 此处推断出 env 的类型
     let env2 = SymTable::<String, i64>::extended(map, &env);
     let v = env2.lookup(&"x".to_string());
@@ -57,10 +57,10 @@ fn test_nest_let() {
     use crate::interp::interp_r1;
     use crate::syntax::Expr::*;
     let exp = Let(
-        Box::new(Var("x".to_string())),
+        "x".to_string(),
         Box::new(Int(8)),
         Box::new(Let(
-            Box::new(Var("y".to_string())),
+            "y".to_string(),
             Box::new(Int(34)),
             Box::new(Prim2(
                 "+".to_string(),
