@@ -138,7 +138,6 @@ fn test_anf_exp() {
     // let t1 (- 2) (let t2 (+ 30 10) (+ t1 t2)))
     let exp = parse(e); // suppose work right
     let exp = anf_exp(exp);
-    println!("{exp:?}");
     if let Let(
         t1,
         box Prim1(op, box that_2),
